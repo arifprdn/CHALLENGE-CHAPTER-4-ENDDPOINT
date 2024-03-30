@@ -94,9 +94,11 @@ module.exports = {
     show: async (req, res, next) => {
         try {
             let id = Number(req.params.id)
-            let user = await prisma.transaction.findUnique({ where: { id: id } })
+            let transaction = await prisma.transaction.findUnique({ where: { id: id } })
+            let sender = await prisma.bankAccount.findUnique({ where: { id: transaction.source_account_id } })
+            let receiver = await prisma.bankAccount.findUnique({ where: { id: transaction.destination_account_id } })
 
-            if (!user) {
+            if (!transaction) {
                 return res.status(400).json({
                     status: false,
                     message: `cant find Transaction with id ${id}`,
@@ -107,7 +109,11 @@ module.exports = {
             res.status(200).json({
                 status: true,
                 message: `ok`,
-                data: user
+                data: transaction,
+                account_info: {
+                    Sender: sender,
+                    Receiver: receiver
+                }
             })
         } catch (err) {
             next(err)
