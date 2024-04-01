@@ -13,6 +13,14 @@ module.exports = {
     welcome,
     create: async (req, res, next) => {
         try {
+            let email = await prisma.user.findUnique({ where: { email: req.body.email } })
+            if (email) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Email already used!',
+                    data: null
+                })
+            }
             if (!req.body.name || !req.body.email || !req.body.password || !req.body.identity_type || !req.body.identity_number || !req.body.address) {
                 return res.status(400).json({
                     status: false,
